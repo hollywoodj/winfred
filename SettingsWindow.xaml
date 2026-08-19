@@ -212,7 +212,8 @@
                         <TextBox Grid.Row="2" Grid.Column="1" x:Name="FontScale" Width="130" Margin="0,0,24,8"
                                  HorizontalAlignment="Left"/>
                     </Grid>
-                    <CheckBox x:Name="ShowActionHints" Content="Show modifier-key hints on the selected result"/>
+                    <CheckBox x:Name="ShowResultShortcuts" Content="Show result shortcuts (1–9) on the right"/>
+                    <CheckBox x:Name="ShowActionHints" Content="While holding Ctrl, Shift or Alt, show that key's action in the selected subtitle"/>
                     <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
                         <TextBlock Text="Placeholder" Style="{StaticResource FieldLabel}"/>
                         <TextBox x:Name="PlaceholderText" Width="420"/>

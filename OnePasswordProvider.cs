@@ -34,7 +34,7 @@ public class OnePasswordProvider
             {
                 new()
                 {
-                    Icon = "🔐",
+                    Icon = Glyphs.Lock,
                     Title = "1Password CLI (op) is not installed",
                     Subtitle = "Install with “winget install AgileBits.1Password.CLI”, then enable " +
                                "Settings → Developer → Integrate with 1Password CLI in the app",
@@ -49,7 +49,7 @@ public class OnePasswordProvider
         {
             return new List<ResultItem>
             {
-                ResultItem.Info("⚠️", "1Password CLI error", _error, ResultKind.Error),
+                ResultItem.Info(Glyphs.Warning, "1Password CLI error", _error, ResultKind.Error),
                 RetryItem(requery),
             };
         }
@@ -58,7 +58,7 @@ public class OnePasswordProvider
         {
             return new List<ResultItem>
             {
-                ResultItem.Info("⏳", "Loading 1Password items…",
+                ResultItem.Info(Glyphs.Refresh, "Loading 1Password items…",
                     "Running “op item list” — approve the prompt in 1Password if one appears"),
             };
         }
@@ -76,7 +76,7 @@ public class OnePasswordProvider
 
         if (matches.Count == 0)
         {
-            matches.Add(ResultItem.Info("🔐", $"No 1Password items match “{query}”",
+            matches.Add(ResultItem.Info(Glyphs.Lock, $"No 1Password items match “{query}”",
                 $"{_items.Count} items in cache · Ctrl+R style refresh: type {Config.Current.OnePassword.Trigger} and pick Retry"));
         }
         return matches;
@@ -104,7 +104,7 @@ public class OnePasswordProvider
 
     private ResultItem RetryItem(Action requery) => new()
     {
-        Icon = "🔄",
+        Icon = Glyphs.Refresh,
         Title = "Retry",
         Subtitle = "Re-run “op item list”",
         Enter = ResultAction.Of("retry", () =>
@@ -172,18 +172,18 @@ public class OnePasswordProvider
 
     private static string IconFor(string category) => category.ToUpperInvariant() switch
     {
-        "LOGIN" => "🔐",
-        "PASSWORD" => "🔑",
-        "API_CREDENTIAL" => "🗝️",
-        "SECURE_NOTE" => "📝",
-        "CREDIT_CARD" => "💳",
-        "IDENTITY" => "🪪",
-        "SSH_KEY" => "🔏",
-        "DATABASE" => "🗄️",
-        "SERVER" => "🖥️",
-        "WIRELESS_ROUTER" => "📶",
-        "SOFTWARE_LICENSE" => "📜",
-        _ => "🔐",
+        "LOGIN" => Glyphs.Lock,
+        "PASSWORD" => Glyphs.Key,
+        "API_CREDENTIAL" => Glyphs.Key,
+        "SECURE_NOTE" => Glyphs.Note,
+        "CREDIT_CARD" => Glyphs.Card,
+        "IDENTITY" => Glyphs.Contact,
+        "SSH_KEY" => Glyphs.Lock,
+        "DATABASE" => Glyphs.Database,
+        "SERVER" => Glyphs.Server,
+        "WIRELESS_ROUTER" => Glyphs.Wifi,
+        "SOFTWARE_LICENSE" => Glyphs.Document,
+        _ => Glyphs.Lock,
     };
 
     private static void OpenInApp(OpItem item) =>

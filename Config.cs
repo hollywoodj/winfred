@@ -33,7 +33,7 @@ public class SearchShortcut
 {
     public string Name { get; set; } = "";
     public string Url { get; set; } = ""; // {q} is replaced with the URL-encoded query
-    public string Icon { get; set; } = "🔍";
+    public string Icon { get; set; } = Glyphs.Search;
 
     /// <summary>Shown in the results when the keyword is typed with no query yet.</summary>
     public bool ShowInHints { get; set; } = true;
@@ -47,6 +47,9 @@ public class AppearanceConfig
     public double TopOffsetPercent { get; set; } = 22;
     /// <summary>dark | midnight | light</summary>
     public string Theme { get; set; } = "dark";
+    /// <summary>Alfred-style 1–9 on the right of each result (Ctrl+number to run it).</summary>
+    public bool ShowResultShortcuts { get; set; } = true;
+    /// <summary>While Ctrl/Shift/Alt is held, the selected row's subtitle becomes that modifier's action.</summary>
     public bool ShowActionHints { get; set; } = true;
     public double FontScale { get; set; } = 1.0;
     public string Placeholder { get; set; } = "Search applications, the web, files, notes, “10+25” …";

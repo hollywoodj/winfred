@@ -32,7 +32,7 @@ public partial class SettingsWindow : Window
         public string Keyword { get; set; } = "";
         public string Name { get; set; } = "";
         public string Url { get; set; } = "";
-        public string Icon { get; set; } = "🔍";
+        public string Icon { get; set; } = Glyphs.Search;
         public bool ShowInHints { get; set; } = true;
     }
 
@@ -99,6 +99,7 @@ public partial class SettingsWindow : Window
         WindowWidth.Text = c.Appearance.WindowWidth.ToString(CultureInfo.InvariantCulture);
         TopOffset.Text = c.Appearance.TopOffsetPercent.ToString(CultureInfo.InvariantCulture);
         FontScale.Text = c.Appearance.FontScale.ToString(CultureInfo.InvariantCulture);
+        ShowResultShortcuts.IsChecked = c.Appearance.ShowResultShortcuts;
         ShowActionHints.IsChecked = c.Appearance.ShowActionHints;
         PlaceholderText.Text = c.Appearance.Placeholder;
 
@@ -226,6 +227,7 @@ public partial class SettingsWindow : Window
         c.Appearance.WindowWidth = ParseDouble(WindowWidth.Text, c.Appearance.WindowWidth, 480, 1400);
         c.Appearance.TopOffsetPercent = ParseDouble(TopOffset.Text, c.Appearance.TopOffsetPercent, 0, 60);
         c.Appearance.FontScale = ParseDouble(FontScale.Text, c.Appearance.FontScale, 0.8, 1.6);
+        c.Appearance.ShowResultShortcuts = ShowResultShortcuts.IsChecked == true;
         c.Appearance.ShowActionHints = ShowActionHints.IsChecked == true;
         c.Appearance.Placeholder = PlaceholderText.Text;
 
@@ -255,7 +257,7 @@ public partial class SettingsWindow : Window
             {
                 Name = row.Name.Trim().Length > 0 ? row.Name.Trim() : keyword,
                 Url = row.Url.Trim(),
-                Icon = row.Icon.Trim().Length > 0 ? row.Icon.Trim() : "🔍",
+                Icon = row.Icon.Trim().Length > 0 ? row.Icon.Trim() : Glyphs.Search,
                 ShowInHints = row.ShowInHints,
             };
         }
