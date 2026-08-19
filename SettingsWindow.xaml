@@ -1,0 +1,559 @@
+<Window x:Class="Winfred.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Winfred Settings"
+        Icon="pack://application:,,,/Assets/winfred.ico"
+        Width="1020" Height="720"
+        MinWidth="820" MinHeight="560"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource WinPanel}"
+        TextOptions.TextFormattingMode="Display">
+    <Window.Resources>
+        <Style x:Key="NavList" TargetType="ListBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <Border x:Name="Bg" CornerRadius="7" Padding="12,9" Margin="0,1"
+                                            Background="Transparent">
+                                        <ContentPresenter/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bg" Property="Background" Value="{DynamicResource WinHover}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Bg" Property="Background" Value="{DynamicResource WinSelected}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="Grid" TargetType="DataGrid">
+            <Setter Property="Background" Value="{DynamicResource WinPanelAlt}"/>
+            <Setter Property="Foreground" Value="{DynamicResource WinText}"/>
+            <Setter Property="RowBackground" Value="Transparent"/>
+            <Setter Property="AlternatingRowBackground" Value="#11FFFFFF"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#22FFFFFF"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="AutoGenerateColumns" Value="False"/>
+            <Setter Property="CanUserAddRows" Value="False"/>
+            <Setter Property="SelectionMode" Value="Single"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="RowHeight" Value="30"/>
+            <Setter Property="ColumnHeaderStyle">
+                <Setter.Value>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="{DynamicResource WinPanel}"/>
+                        <Setter Property="Foreground" Value="{DynamicResource WinSubtext}"/>
+                        <Setter Property="Padding" Value="8,6"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource WinBorder}"/>
+                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="CellStyle">
+                <Setter.Value>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Foreground" Value="{DynamicResource WinText}"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Padding" Value="8,4"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="DataGridCell">
+                                    <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource WinSelected}"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="212"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Sidebar -->
+        <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Background="{DynamicResource WinPanelAlt}">
+            <DockPanel Margin="12,16,12,12">
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="6,0,0,14">
+                    <ContentControl Template="{StaticResource WinHatMark}"
+                                    Width="34" Height="34"
+                                    Margin="0,0,10,0"
+                                    VerticalAlignment="Center"
+                                    IsTabStop="False"/>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Winfred" FontSize="20" FontWeight="Bold"
+                                   Foreground="{DynamicResource WinText}"/>
+                        <TextBlock x:Name="VersionLabel" FontSize="11"
+                                   Foreground="{DynamicResource WinSubtext}"/>
+                    </StackPanel>
+                </StackPanel>
+                <ListBox x:Name="Nav" Style="{StaticResource NavList}" SelectionChanged="Nav_SelectionChanged"
+                         FontFamily="Segoe UI Emoji, Segoe UI" FontSize="13">
+                    <ListBoxItem Foreground="{DynamicResource WinText}">⚙️   General</ListBoxItem>
+                    <ListBoxItem Foreground="{DynamicResource WinText}">🔍   Search Engines</ListBoxItem>
+                    <ListBoxItem Foreground="{DynamicResource WinText}">📁   Files</ListBoxItem>
+                    <ListBoxItem Foreground="{DynamicResource WinText}">⭐   Bookmarks</ListBoxItem>
+                    <ListBoxItem Foreground="{DynamicResource WinText}">🐘   Evernote</ListBoxItem>
+                    <ListBoxItem Foreground="{DynamicResource WinText}">🖥️   Windows Settings</ListBoxItem>
+                    <ListBoxItem Foreground="{DynamicResource WinText}">🟰   Calculator</ListBoxItem>
+                    <ListBoxItem Foreground="{DynamicResource WinText}">🔐   1Password</ListBoxItem>
+                    <ListBoxItem Foreground="{DynamicResource WinText}">🧰   Advanced</ListBoxItem>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <!-- Panels -->
+        <Grid Grid.Row="0" Grid.Column="1" Margin="26,22,26,0">
+
+            <!-- ================= General ================= -->
+            <ScrollViewer x:Name="PanelGeneral" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="General" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Style="{StaticResource SectionBlurb}"
+                               Text="How Winfred is summoned and how the launcher looks."/>
+
+                    <TextBlock Text="Summon hotkey" Style="{StaticResource GroupHeader}"/>
+                    <RadioButton x:Name="HotkeyModeDoubleTap" GroupName="HotkeyMode"
+                                 Content="Double-tap a modifier key" Checked="HotkeyMode_Changed"/>
+                    <StackPanel Orientation="Horizontal" Margin="24,2,0,6">
+                        <TextBlock Text="Key" Style="{StaticResource FieldLabel}"/>
+                        <ComboBox x:Name="HotkeyKey" Width="120" IsEnabled="False">
+                            <ComboBoxItem Content="win"/>
+                            <ComboBoxItem Content="ctrl"/>
+                            <ComboBoxItem Content="alt"/>
+                            <ComboBoxItem Content="shift"/>
+                        </ComboBox>
+                        <TextBlock Text="Double-tap window (ms)" Style="{StaticResource FieldLabel}" Margin="18,0,12,0"/>
+                        <TextBox x:Name="HotkeyMs" Width="70" IsEnabled="False"/>
+                    </StackPanel>
+
+                    <RadioButton x:Name="HotkeyModeCombo" GroupName="HotkeyMode"
+                                 Content="Key combination" Checked="HotkeyMode_Changed"/>
+                    <StackPanel Orientation="Horizontal" Margin="24,2,0,4">
+                        <TextBlock Text="Shortcut" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="HotkeyCombo" Width="220" IsReadOnly="True" IsEnabled="False"
+                                 PreviewKeyDown="HotkeyCombo_PreviewKeyDown"
+                                 GotFocus="HotkeyCombo_GotFocus" LostFocus="HotkeyCombo_LostFocus"/>
+                        <TextBlock Text="click, then press the combination" Style="{StaticResource FieldLabel}"
+                                   Margin="12,0,0,0"/>
+                    </StackPanel>
+                    <TextBlock Style="{StaticResource SectionBlurb}" Margin="24,4,0,0"
+                               Text="Double-tapping Win or Alt delays a single tap by the double-tap window so the Start menu still works. Ctrl, Shift and key combinations have no such delay."/>
+
+                    <CheckBox x:Name="SuppressInFullscreen" Margin="0,10,0,0"
+                              Content="Ignore the hotkey while a full-screen app is in front"/>
+                    <TextBlock Style="{StaticResource SectionBlurb}" Margin="24,2,0,0"
+                               Text="Summoning Winfred over a full-screen game takes focus away from it, which makes most games mute their audio — and over exclusive full-screen the launcher can't be drawn on top anyway. Leave this on unless you play in a window."/>
+
+                    <TextBlock Text="Startup" Style="{StaticResource GroupHeader}"/>
+                    <CheckBox x:Name="StartWithWindows" Content="Start Winfred when I sign in"/>
+                    <CheckBox x:Name="LearnFromUsage"
+                              Content="Learn which results I pick and rank them higher next time"/>
+
+                    <TextBlock Text="Appearance" Style="{StaticResource GroupHeader}"/>
+                    <Grid Margin="0,2,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Theme" Style="{StaticResource FieldLabel}"/>
+                        <ComboBox Grid.Row="0" Grid.Column="1" x:Name="ThemeBox" Width="130" Margin="0,0,24,8"/>
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="Results shown" Style="{StaticResource FieldLabel}"/>
+                        <TextBox Grid.Row="0" Grid.Column="3" x:Name="MaxResults" Width="70" Margin="0,0,0,8"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Window width" Style="{StaticResource FieldLabel}"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" x:Name="WindowWidth" Width="130" Margin="0,0,24,8"
+                                 HorizontalAlignment="Left"/>
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="Top offset (%)" Style="{StaticResource FieldLabel}"/>
+                        <TextBox Grid.Row="1" Grid.Column="3" x:Name="TopOffset" Width="70" Margin="0,0,0,8"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Font scale" Style="{StaticResource FieldLabel}"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" x:Name="FontScale" Width="130" Margin="0,0,24,8"
+                                 HorizontalAlignment="Left"/>
+                    </Grid>
+                    <CheckBox x:Name="ShowActionHints" Content="Show modifier-key hints on the selected result"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                        <TextBlock Text="Placeholder" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="PlaceholderText" Width="420"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,16,0,20">
+                        <Button Content="Preview launcher" Click="PreviewLauncher_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ================= Search engines ================= -->
+            <DockPanel x:Name="PanelSearches" Visibility="Collapsed">
+                <StackPanel DockPanel.Dock="Top">
+                    <TextBlock Text="Search Engines" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Style="{StaticResource SectionBlurb}"
+                               Text="Type a keyword then your search, e.g. “gh winfred”. Use {q} in the URL where the query goes — it is inserted URL-encoded."/>
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,20">
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Add" Click="AddSearch_Click"/>
+                        <Button Content="Duplicate" Click="DuplicateSearch_Click"/>
+                        <Button Content="Remove" Click="RemoveSearch_Click"/>
+                        <Button Content="Test" Click="TestSearch_Click"/>
+                        <Button Content="Make default" Click="MakeDefaultSearch_Click"/>
+                        <Button Content="Restore defaults" Click="RestoreSearches_Click"/>
+                    </StackPanel>
+                    <TextBlock Text="Fallback search (used when nothing else matches)"
+                               Style="{StaticResource GroupHeader}"/>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Name" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="DefaultSearchName" Width="150" Margin="0,0,18,0"/>
+                        <TextBlock Text="URL" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="DefaultSearchUrl" Width="430"/>
+                    </StackPanel>
+                </StackPanel>
+                <DataGrid x:Name="SearchesGrid" Style="{StaticResource Grid}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Keyword" Binding="{Binding Keyword}" Width="110"/>
+                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="170"/>
+                        <DataGridTextColumn Header="URL ({q} = query)" Binding="{Binding Url}" Width="*"/>
+                        <DataGridTextColumn Header="Icon" Binding="{Binding Icon}" Width="60"/>
+                        <DataGridCheckBoxColumn Header="Suggest" Binding="{Binding ShowInHints}" Width="70"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+
+            <!-- ================= Files ================= -->
+            <ScrollViewer x:Name="PanelFiles" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="Files" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Style="{StaticResource SectionBlurb}"
+                               Text="Winfred keeps its own index of the folders you choose, watched live and rebuilt on a timer."/>
+
+                    <CheckBox x:Name="FilesEnabled" Content="Search local files"/>
+                    <CheckBox x:Name="FilesInDefault" Content="Include file matches in unprefixed results"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                        <TextBlock Text="Search keyword" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="FilesKeyword" Width="90" Margin="0,0,18,0"/>
+                        <TextBlock Text="Reveal keyword" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="FilesRevealKeyword" Width="90"/>
+                    </StackPanel>
+
+                    <TextBlock Text="Indexed folders" Style="{StaticResource GroupHeader}"/>
+                    <DataGrid x:Name="ScopesGrid" Style="{StaticResource Grid}" Height="150">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Folder" Binding="{Binding Path}" Width="*"/>
+                            <DataGridCheckBoxColumn Header="Subfolders" Binding="{Binding IncludeSubfolders}" Width="90"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <Button Content="Add folder…" Click="AddScope_Click"/>
+                        <Button Content="Remove" Click="RemoveScope_Click"/>
+                    </StackPanel>
+
+                    <TextBlock Text="Filters" Style="{StaticResource GroupHeader}"/>
+                    <TextBlock Text="Skip these folder names (one per line)" Style="{StaticResource FieldLabel}"
+                               Margin="0,0,0,4" HorizontalAlignment="Left"/>
+                    <TextBox x:Name="ExcludedFolders" Height="70" AcceptsReturn="True"
+                             VerticalScrollBarVisibility="Auto" TextWrapping="NoWrap"/>
+                    <Grid Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Only index these extensions (blank = all)"
+                                       Style="{StaticResource FieldLabel}" Margin="0,0,0,4" HorizontalAlignment="Left"/>
+                            <TextBox x:Name="IncludedExtensions" Height="56" AcceptsReturn="True"
+                                     VerticalScrollBarVisibility="Auto"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Never index these extensions"
+                                       Style="{StaticResource FieldLabel}" Margin="0,0,0,4" HorizontalAlignment="Left"/>
+                            <TextBox x:Name="ExcludedExtensions" Height="56" AcceptsReturn="True"
+                                     VerticalScrollBarVisibility="Auto"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Text="Indexing" Style="{StaticResource GroupHeader}"/>
+                    <CheckBox x:Name="IndexFolders" Content="Index folders as well as files"/>
+                    <CheckBox x:Name="IndexHidden" Content="Include hidden and system files"/>
+                    <CheckBox x:Name="LiveWatch" Content="Watch folders for changes while running"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                        <TextBlock Text="Rebuild every (minutes)" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="FilesRefresh" Width="70" Margin="0,0,18,0"/>
+                        <TextBlock Text="Max indexed items" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="FilesMaxEntries" Width="90"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,14,0,20">
+                        <Button Content="Rebuild index now" Click="RebuildIndex_Click"/>
+                        <TextBlock x:Name="FilesStatus" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ================= Bookmarks ================= -->
+            <ScrollViewer x:Name="PanelBookmarks" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="Bookmarks" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Style="{StaticResource SectionBlurb}"
+                               Text="Read straight from each browser's bookmarks file. Nothing is written back and no extension is needed."/>
+
+                    <CheckBox x:Name="BookmarksEnabled" Content="Search browser bookmarks"/>
+                    <CheckBox x:Name="BookmarksInDefault" Content="Include bookmarks in unprefixed results"/>
+                    <CheckBox x:Name="BookmarksDefaultProfileOnly" Click="BookmarkScope_Changed"
+                              Content="Only read each browser's Default profile (skip Guest and secondary profiles)"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                        <TextBlock Text="Keyword" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="BookmarksKeyword" Width="90" Margin="0,0,18,0"/>
+                        <TextBlock Text="Reload every (minutes)" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="BookmarksRefresh" Width="70"/>
+                    </StackPanel>
+
+                    <TextBlock Text="Browsers found on this PC" Style="{StaticResource GroupHeader}"/>
+                    <ItemsControl x:Name="BrowserList"/>
+                    <TextBlock x:Name="BookmarksDetected" Style="{StaticResource SectionBlurb}" Margin="0,10,0,0"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,20">
+                        <Button Content="Reload bookmarks now" Click="ReloadBookmarks_Click"/>
+                        <TextBlock x:Name="BookmarksStatus" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ================= Evernote ================= -->
+            <ScrollViewer x:Name="PanelEvernote" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="Evernote" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Style="{StaticResource SectionBlurb}"
+                               Text="Winfred reads the local database the Evernote desktop app keeps in sync, so search works offline. Titles, notebooks and tags are always searched; note text is searched for notes Evernote has stored locally."/>
+
+                    <CheckBox x:Name="EvernoteEnabled" Content="Search Evernote notes"/>
+                    <CheckBox x:Name="EvernoteInDefault" Content="Include notes in unprefixed results"/>
+                    <CheckBox x:Name="EvernoteSearchContent" Content="Search inside note text, not just titles"/>
+                    <CheckBox x:Name="EvernoteIncludeTrashed" Content="Include notes in the trash"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                        <TextBlock Text="Keyword" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="EvernoteKeyword" Width="90" Margin="0,0,18,0"/>
+                        <TextBlock Text="Reload every (minutes)" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="EvernoteRefresh" Width="70"/>
+                    </StackPanel>
+
+                    <TextBlock Text="Database" Style="{StaticResource GroupHeader}"/>
+                    <TextBox x:Name="EvernoteDbPath"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <Button Content="Auto-detect" Click="DetectEvernote_Click"/>
+                        <Button Content="Browse…" Click="BrowseEvernote_Click"/>
+                        <Button Content="Reindex now" Click="ReindexEvernote_Click"/>
+                    </StackPanel>
+                    <TextBlock x:Name="EvernoteStatus" Style="{StaticResource SectionBlurb}" Margin="0,12,0,20"/>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ================= Windows settings ================= -->
+            <ScrollViewer x:Name="PanelSystem" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="Windows Settings" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Style="{StaticResource SectionBlurb}"
+                               Text="Jump straight to a Settings page or classic control panel — “set bluetooth”, “set display”, “set device manager”."/>
+
+                    <CheckBox x:Name="SystemEnabled" Content="Search Windows settings"/>
+                    <CheckBox x:Name="SystemInDefault" Content="Include settings pages in unprefixed results"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                        <TextBlock Text="Keyword" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="SystemKeyword" Width="90"/>
+                    </StackPanel>
+
+                    <TextBlock Text="Catalog" Style="{StaticResource GroupHeader}"/>
+                    <TextBox x:Name="SystemFilter" Width="300" HorizontalAlignment="Left"
+                             TextChanged="SystemFilter_TextChanged"/>
+                    <DataGrid x:Name="SystemGrid" Style="{StaticResource Grid}" Height="300" Margin="0,8,0,20"
+                              IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Page" Binding="{Binding Name}" Width="230"/>
+                            <DataGridTextColumn Header="Group" Binding="{Binding Group}" Width="130"/>
+                            <DataGridTextColumn Header="Opens" Binding="{Binding Target}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ================= Calculator ================= -->
+            <ScrollViewer x:Name="PanelCalculator" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="Calculator" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Style="{StaticResource SectionBlurb}"
+                               Text="Type a sum straight into Winfred — “10+25” answers as you type. Enter copies the result, Ctrl+Enter copies “expression = result”, Shift+Enter shows it in large type."/>
+
+                    <CheckBox x:Name="CalcEnabled" Content="Enable the inline calculator"/>
+                    <CheckBox x:Name="CalcRequireEquals" Content="Only calculate when the query starts with “=”"/>
+                    <CheckBox x:Name="CalcThousands" Content="Group thousands with separators"/>
+                    <CheckBox x:Name="CalcCopyOnEnter" Content="Enter copies the result to the clipboard"/>
+                    <CheckBox x:Name="CalcLargeType" Content="Shift+Enter shows the answer in large type"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                        <TextBlock Text="Decimal places" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="CalcDecimals" Width="70"/>
+                    </StackPanel>
+
+                    <TextBlock Text="Try it" Style="{StaticResource GroupHeader}"/>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBox x:Name="CalcTest" Width="300" TextChanged="CalcTest_TextChanged"/>
+                        <TextBlock x:Name="CalcTestResult" Margin="14,0,0,0" FontSize="16" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" Foreground="{DynamicResource WinText}"/>
+                    </StackPanel>
+                    <TextBlock Style="{StaticResource SectionBlurb}" Margin="0,14,0,20"
+                               Text="Supports + − × ÷ ^ and mod, brackets, percentages (“120 + 15%”, “20% of 300”), hex/binary literals (0x1f, 0b1011), constants pi/e/phi/tau, and functions sqrt, cbrt, abs, round, floor, ceil, ln, log, log2, exp, sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, min, max, sum, avg, pow, fact, rad, deg."/>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ================= 1Password ================= -->
+            <ScrollViewer x:Name="PanelOnePassword" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="1Password" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Style="{StaticResource SectionBlurb}"
+                               Text="Needs the op CLI plus 1Password → Settings → Developer → “Integrate with 1Password CLI”. Logins open their site and get filled; passwords, API credentials and other secrets are copied instead."/>
+
+                    <CheckBox x:Name="OpEnabled" Content="Enable 1Password search"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                        <TextBlock Text="Keyword" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="OpTrigger" Width="90" Margin="0,0,18,0"/>
+                        <TextBlock Text="op CLI path" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="OpCliPath" Width="300"/>
+                        <Button Content="Browse…" Click="BrowseOpCli_Click" Margin="8,0,0,0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                        <Button Content="Test connection" Click="TestOnePassword_Click"/>
+                        <TextBlock x:Name="OpStatus" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <TextBlock Text="What Enter does for a login" Style="{StaticResource GroupHeader}"/>
+                    <RadioButton x:Name="FillExtension" GroupName="FillMode"
+                                 Content="Open the site, then press the 1Password extension's autofill shortcut"/>
+                    <StackPanel Orientation="Horizontal" Margin="24,2,0,6">
+                        <TextBlock Text="Autofill shortcut" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="OpShortcut" Width="180" IsReadOnly="True"
+                                 PreviewKeyDown="OpShortcut_PreviewKeyDown"
+                                 GotFocus="HotkeyCombo_GotFocus" LostFocus="HotkeyCombo_LostFocus"/>
+                        <TextBlock Text="1Password's default in Chrome is Ctrl+\" Style="{StaticResource FieldLabel}"
+                                   Margin="12,0,0,0"/>
+                    </StackPanel>
+                    <RadioButton x:Name="FillType" GroupName="FillMode"
+                                 Content="Open the site, then type the username and password myself"/>
+                    <TextBlock Style="{StaticResource SectionBlurb}" Margin="24,2,0,6"
+                               Text="Typing works without the browser extension, but sends the password as keystrokes. Winfred checks a browser is still frontmost immediately before each keystroke and aborts otherwise."/>
+                    <RadioButton x:Name="FillCopyOnly" GroupName="FillMode"
+                                 Content="Only open the site — never fill anything"/>
+
+                    <CheckBox x:Name="OpSubmit" Content="Press Enter to submit the form after filling"
+                              Margin="0,10,0,0"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                        <TextBlock Text="Wait for page load (ms)" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="OpPageLoad" Width="80" Margin="0,0,18,0"/>
+                        <TextBlock Text="Wait before submit (ms)" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="OpSubmitDelay" Width="80"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <TextBlock Text="Browser (blank = default)" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="OpBrowser" Width="380"/>
+                        <Button Content="Browse…" Click="BrowseBrowser_Click" Margin="8,0,0,0"/>
+                    </StackPanel>
+
+                    <TextBlock Text="Copy instead of fill" Style="{StaticResource GroupHeader}"/>
+                    <TextBlock Style="{StaticResource SectionBlurb}"
+                               Text="Items in these categories always copy their secret to the clipboard."/>
+                    <ItemsControl x:Name="CategoryList"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,20">
+                        <TextBlock Text="Clear clipboard after (seconds, 0 = never)" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="OpClipboardSeconds" Width="70" Margin="0,0,18,0"/>
+                        <TextBlock Text="Cache items for (minutes)" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="OpCacheMinutes" Width="70"/>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ================= Advanced ================= -->
+            <ScrollViewer x:Name="PanelAdvanced" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="Advanced" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Style="{StaticResource SectionBlurb}"
+                               Text="Everything here is stored under %APPDATA%\Winfred."/>
+
+                    <TextBlock Text="Configuration file" Style="{StaticResource GroupHeader}"/>
+                    <TextBlock x:Name="ConfigPathLabel" Style="{StaticResource FieldLabel}"
+                               HorizontalAlignment="Left" Margin="0,0,0,8"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Open in Notepad" Click="OpenConfig_Click"/>
+                        <Button Content="Show folder" Click="ShowConfigFolder_Click"/>
+                        <Button Content="Export…" Click="ExportConfig_Click"/>
+                        <Button Content="Import…" Click="ImportConfig_Click"/>
+                    </StackPanel>
+
+                    <TextBlock Text="Learning" Style="{StaticResource GroupHeader}"/>
+                    <TextBlock x:Name="UsageLabel" Style="{StaticResource FieldLabel}"
+                               HorizontalAlignment="Left" Margin="0,0,0,8"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Reset what Winfred has learned" Click="ResetUsage_Click"/>
+                    </StackPanel>
+
+                    <TextBlock Text="Reset" Style="{StaticResource GroupHeader}"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Restore all settings to defaults" Click="ResetAll_Click"/>
+                    </StackPanel>
+
+                    <TextBlock Text="About" Style="{StaticResource GroupHeader}"/>
+                    <TextBlock x:Name="AboutLabel" Style="{StaticResource SectionBlurb}"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Footer -->
+        <Border Grid.Row="1" Grid.Column="1" Padding="26,12" Background="{DynamicResource WinPanel}">
+            <Grid>
+                <TextBlock x:Name="StatusLabel" VerticalAlignment="Center" FontSize="12"
+                           Foreground="{DynamicResource WinSubtext}"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Cancel" Click="Cancel_Click"/>
+                    <Button Content="Apply" Click="Apply_Click"/>
+                    <Button Content="Save &amp; Close" Style="{StaticResource PrimaryButton}" Click="Save_Click"
+                            Margin="0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

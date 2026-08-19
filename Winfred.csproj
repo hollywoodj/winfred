@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>Winfred</AssemblyName>
+    <RootNamespace>Winfred</RootNamespace>
+    <Version>0.2.0</Version>
+    <!-- Pin the RID so publish ships only the Windows SQLite native library, not all
+         twenty platforms' worth. Still framework-dependent: needs the .NET 8 Desktop Runtime. -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <!-- The top-hat mark: shell/taskbar icon for the exe, and a WPF resource so the
+         tray icon and settings window can load the same file at runtime. -->
+    <ApplicationIcon>Assets\winfred.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\winfred.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Reads the Evernote desktop app's local SQLite note graph. -->
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.10" />
+  </ItemGroup>
+
+</Project>

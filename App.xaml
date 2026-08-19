@@ -1,0 +1,141 @@
+<Application x:Class="Winfred.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             ShutdownMode="OnExplicitShutdown">
+    <Application.Resources>
+        <!-- Launcher font sizes; MainWindow scales these from Appearance.FontScale. -->
+        <sys:Double x:Key="WinInputSize">26</sys:Double>
+        <sys:Double x:Key="WinIconSize">22</sys:Double>
+        <sys:Double x:Key="WinTitleSize">16</sys:Double>
+        <sys:Double x:Key="WinSubSize">12</sys:Double>
+        <sys:Double x:Key="WinHintSize">11</sys:Double>
+
+        <!-- Theme brushes; Theme.Apply swaps these at runtime. -->
+        <SolidColorBrush x:Key="WinBg" Color="#F5202230"/>
+        <SolidColorBrush x:Key="WinPanel" Color="#FF171A26"/>
+        <SolidColorBrush x:Key="WinPanelAlt" Color="#FF1E2233"/>
+        <SolidColorBrush x:Key="WinBorder" Color="#33FFFFFF"/>
+        <SolidColorBrush x:Key="WinText" Color="#F2F2F7"/>
+        <SolidColorBrush x:Key="WinSubtext" Color="#99A0B8"/>
+        <SolidColorBrush x:Key="WinPlaceholder" Color="#55FFFFFF"/>
+        <SolidColorBrush x:Key="WinHover" Color="#2A3048"/>
+        <SolidColorBrush x:Key="WinSelected" Color="#3D4666"/>
+        <SolidColorBrush x:Key="WinAccent" Color="#FF5B8CFF"/>
+        <SolidColorBrush x:Key="WinDanger" Color="#FFE06C75"/>
+
+        <!-- The top-hat mark, drawn in the same 256x256 space as Assets\winfred.ico
+             (see tools\make-icon.ps1). Apply to a ContentControl:
+             <ContentControl Template="{StaticResource WinHatMark}" Width="26" Height="26"/> -->
+        <ControlTemplate x:Key="WinHatMark" TargetType="ContentControl">
+            <Viewbox Stretch="Uniform">
+                <Canvas Width="256" Height="256">
+                    <!-- Crown: elliptical top, sides tapering in towards the brim. -->
+                    <Path Fill="{DynamicResource WinText}"
+                          Data="M 78,53 A 50,13 0 0 1 178,53 L 170,168 L 86,168 Z"/>
+                    <!-- Hatband, following the taper of the crown. -->
+                    <Path Fill="{DynamicResource WinAccent}"
+                          Data="M 83.2,128 L 172.8,128 L 170.6,160 L 85.4,160 Z"/>
+                    <Ellipse Canvas.Left="24" Canvas.Top="154" Width="208" Height="48"
+                             Fill="{DynamicResource WinText}"/>
+                </Canvas>
+            </Viewbox>
+        </ControlTemplate>
+
+        <!-- Settings-window control styles -->
+        <Style x:Key="SectionTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource WinText}"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+
+        <Style x:Key="SectionBlurb" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{DynamicResource WinSubtext}"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
+        </Style>
+
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource WinSubtext}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,12,0"/>
+        </Style>
+
+        <Style x:Key="GroupHeader" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource WinText}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,18,0,8"/>
+        </Style>
+
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="{DynamicResource WinPanelAlt}"/>
+            <Setter Property="Foreground" Value="{DynamicResource WinText}"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource WinText}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="7,5"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{DynamicResource WinText}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="0,5,0,5"/>
+        </Style>
+
+        <Style TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{DynamicResource WinText}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="0,4,0,4"/>
+        </Style>
+
+        <Style TargetType="ComboBox">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="7,4"/>
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource WinPanelAlt}"/>
+            <Setter Property="Foreground" Value="{DynamicResource WinText}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bg"
+                                CornerRadius="6"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource WinHover}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="{DynamicResource WinAccent}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+    </Application.Resources>
+</Application>

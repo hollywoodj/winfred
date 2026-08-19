@@ -1,0 +1,12 @@
+# Build intermediates. dist/ is checked in on purpose — the README points people
+# straight at .\dist\Winfred.exe.
+bin/
+obj/
+
+# Local state lives in %APPDATA%\Winfred, but keep stray copies out anyway.
+*.user
+config.json
+usage.json
+file-index.bin
+evernote-snapshot.db
+error.log
