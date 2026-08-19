@@ -1,3 +1,5 @@
+using System.Windows.Media;
+
 namespace Winfred;
 
 public enum ResultKind
@@ -29,10 +31,18 @@ public sealed class ResultAction
 
 public class ResultItem
 {
-    public string Icon { get; init; } = "🔍";
+    /// <summary>Segoe MDL2 glyph or a custom emoji; used when <see cref="IconImage"/> is null.</summary>
+    public string Icon { get; init; } = Glyphs.Search;
+
+    /// <summary>Windows shell icon for apps and files, Alfred-style. Null falls back to <see cref="Icon"/>.</summary>
+    public ImageSource? IconImage { get; init; }
+
     public string Title { get; init; } = "";
     public string Subtitle { get; init; } = "";
     public ResultKind Kind { get; init; } = ResultKind.Action;
+
+    /// <summary>1–9 shown on the right of the row, matching Alfred's Cmd+# shortcuts. Empty if none.</summary>
+    public string Shortcut { get; set; } = "";
 
     /// <summary>Stable identity used to learn which results this user picks. Null = never learned.</summary>
     public string? Uid { get; init; }
@@ -50,21 +60,6 @@ public class ResultItem
     public ResultAction? CtrlEnter { get; init; }
     public ResultAction? ShiftEnter { get; init; }
     public ResultAction? AltEnter { get; init; }
-
-    /// <summary>Right-hand hint text, e.g. "⏎ open · ⌃⏎ reveal". Computed when not set.</summary>
-    public string Hint => _hint ??= BuildHint();
-    private string? _hint;
-
-    private string BuildHint()
-    {
-        if (!Config.Current.Appearance.ShowActionHints) return "";
-        var parts = new List<string>();
-        if (Enter is { Label.Length: > 0 }) parts.Add($"⏎ {Enter.Label}");
-        if (CtrlEnter is { Label.Length: > 0 }) parts.Add($"^⏎ {CtrlEnter.Label}");
-        if (ShiftEnter is { Label.Length: > 0 }) parts.Add($"⇧⏎ {ShiftEnter.Label}");
-        if (AltEnter is { Label.Length: > 0 }) parts.Add($"⌥⏎ {AltEnter.Label}");
-        return string.Join("   ", parts);
-    }
 
     public ResultAction? ActionFor(bool ctrl, bool shift, bool alt)
     {

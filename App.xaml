@@ -5,11 +5,13 @@
              ShutdownMode="OnExplicitShutdown">
     <Application.Resources>
         <!-- Launcher font sizes; MainWindow scales these from Appearance.FontScale. -->
-        <sys:Double x:Key="WinInputSize">26</sys:Double>
-        <sys:Double x:Key="WinIconSize">22</sys:Double>
-        <sys:Double x:Key="WinTitleSize">16</sys:Double>
+        <sys:Double x:Key="WinInputSize">24</sys:Double>
+        <sys:Double x:Key="WinIconSize">20</sys:Double>
+        <sys:Double x:Key="WinResultIconSize">36</sys:Double>
+        <sys:Double x:Key="WinTitleSize">18</sys:Double>
         <sys:Double x:Key="WinSubSize">12</sys:Double>
         <sys:Double x:Key="WinHintSize">11</sys:Double>
+        <sys:Double x:Key="WinShortcutSize">16</sys:Double>
 
         <!-- Theme brushes; Theme.Apply swaps these at runtime. -->
         <SolidColorBrush x:Key="WinBg" Color="#F5202230"/>
@@ -23,21 +25,28 @@
         <SolidColorBrush x:Key="WinSelected" Color="#3D4666"/>
         <SolidColorBrush x:Key="WinAccent" Color="#FF5B8CFF"/>
         <SolidColorBrush x:Key="WinDanger" Color="#FFE06C75"/>
+        <SolidColorBrush x:Key="WinDivider" Color="#22FFFFFF"/>
+        <SolidColorBrush x:Key="WinShortcut" Color="#FF6B7390"/>
+        <SolidColorBrush x:Key="WinShortcutSelected" Color="#FFD0D4E4"/>
+        <SolidColorBrush x:Key="WinSelectedText" Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="WinSelectedSubtext" Color="#FFC5CAD8"/>
 
-        <!-- The top-hat mark, drawn in the same 256x256 space as Assets\winfred.ico
-             (see tools\make-icon.ps1). Apply to a ContentControl:
-             <ContentControl Template="{StaticResource WinHatMark}" Width="26" Height="26"/> -->
+        <!-- Bowler-hat mark, drawn in the same 256x256 space as Assets\winfred.ico
+             (see tools\make-icon.ps1). A rounded crown and modest brim, Alfred's
+             silhouette, with Winfred's accent ribbon. Apply to a ContentControl:
+             <ContentControl Template="{StaticResource WinHatMark}" Width="40" Height="40"/> -->
         <ControlTemplate x:Key="WinHatMark" TargetType="ContentControl">
             <Viewbox Stretch="Uniform">
                 <Canvas Width="256" Height="256">
-                    <!-- Crown: elliptical top, sides tapering in towards the brim. -->
-                    <Path Fill="{DynamicResource WinText}"
-                          Data="M 78,53 A 50,13 0 0 1 178,53 L 170,168 L 86,168 Z"/>
-                    <!-- Hatband, following the taper of the crown. -->
-                    <Path Fill="{DynamicResource WinAccent}"
-                          Data="M 83.2,128 L 172.8,128 L 170.6,160 L 85.4,160 Z"/>
-                    <Ellipse Canvas.Left="24" Canvas.Top="154" Width="208" Height="48"
+                    <!-- Brim: modest bowler disk, seen slightly from above. -->
+                    <Ellipse Canvas.Left="36" Canvas.Top="160" Width="184" Height="48"
                              Fill="{DynamicResource WinText}"/>
+                    <!-- Crown: hemisphere sitting on the brim. -->
+                    <Path Fill="{DynamicResource WinText}"
+                          Data="M 60,168 A 68,80 0 0 1 196,168 L 196,176 L 60,176 Z"/>
+                    <!-- Ribbon at the equator of the crown. -->
+                    <Path Fill="{DynamicResource WinAccent}"
+                          Data="M 66,144 L 190,144 L 190,168 L 66,168 Z"/>
                 </Canvas>
             </Viewbox>
         </ControlTemplate>

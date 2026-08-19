@@ -1,9 +1,9 @@
-# Draws Winfred's top-hat mark and packs it into ..\Assets\winfred.ico.
+# Draws Winfred's bowler-hat mark and packs it into ..\Assets\winfred.ico.
 # Re-run this after changing the geometry; the .ico is checked in so a normal
 # build never needs it.
 #
-# The same shape lives as vector XAML in App.xaml (WinHatCrown / WinHatBand /
-# WinHatBrim, drawn in the same 256x256 space) — keep the two in step.
+# The same shape lives as vector XAML in App.xaml (WinHatMark, drawn in the same
+# 256x256 space) — keep the two in step.
 Add-Type -AssemblyName System.Drawing
 
 $sizes = @(16, 20, 24, 32, 40, 48, 64, 128, 256)
@@ -19,12 +19,12 @@ function New-RoundedRect([single]$x, [single]$y, [single]$w, [single]$h, [single
     return $p
 }
 
-# Crown: flat-bottomed trapezoid (top hats flare upward) with an elliptical cap.
+# Crown: hemisphere sitting on the brim (Alfred's bowler, not a stovepipe).
 function New-CrownPath {
     $p = New-Object System.Drawing.Drawing2D.GraphicsPath
-    $p.AddArc(78, 40, 100, 26, 180, 180)           # top of the crown, curving over
-    $p.AddLine(178, 53, 170, 168)                  # right side
-    $p.AddLine(170, 168, 86, 168)                  # bottom, hidden by the brim
+    $p.AddArc(60, 88, 136, 160, 180, 180)          # dome; equator at y=168
+    $p.AddLine(196, 168, 196, 176)                 # short skirt into the brim
+    $p.AddLine(196, 176, 60, 176)
     $p.CloseFigure()
     return $p
 }
@@ -45,16 +45,16 @@ function Draw-Hat([System.Drawing.Graphics]$g, [int]$size) {
     $felt = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 242, 242, 247))
     $accent = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 91, 140, 255))
 
+    # Brim first, then the dome covering the back of it, then the ribbon.
+    $g.FillEllipse($felt, 36, 160, 184, 48)
+
     $crown = New-CrownPath
     $g.FillPath($felt, $crown)
 
-    # Hatband, clipped to the crown so it follows the taper.
     $saved = $g.Save()
     $g.SetClip($crown)
-    $g.FillRectangle($accent, 70, 128, 116, 32)
+    $g.FillRectangle($accent, 66, 144, 124, 24)
     $g.Restore($saved)
-
-    $g.FillEllipse($felt, 24, 154, 208, 48)
 
     $accent.Dispose(); $felt.Dispose(); $grad.Dispose(); $crown.Dispose(); $tile.Dispose()
 }

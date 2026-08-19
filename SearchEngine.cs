@@ -51,7 +51,8 @@ public sealed class SearchEngine : IDisposable
         var cfg = Config.Current;
         int limit = cfg.Appearance.MaxResults;
 
-        if (text.Length == 0) return Hints(cfg);
+        // Alfred shows only the search field until you type; the placeholder covers onboarding.
+        if (text.Length == 0) return new List<ResultItem>();
 
         var results = new List<ResultItem>();
 
@@ -80,7 +81,7 @@ public sealed class SearchEngine : IDisposable
             string url = text.Contains("://") ? text : "https://" + text;
             results.Add(new ResultItem
             {
-                Icon = "🌐",
+                Icon = Glyphs.Globe,
                 Title = $"Open {url}",
                 Subtitle = "Open in your default browser",
                 Kind = ResultKind.Web,
@@ -106,7 +107,7 @@ public sealed class SearchEngine : IDisposable
         // 4. Web search fallback, always available at the bottom.
         results.Add(new ResultItem
         {
-            Icon = "🔍",
+            Icon = Glyphs.Search,
             Title = $"Search {cfg.DefaultSearchName} for “{text}”",
             Subtitle = "Press Enter to open in your browser",
             Kind = ResultKind.Web,
@@ -188,7 +189,7 @@ public sealed class SearchEngine : IDisposable
     private static List<ResultItem> WithPrompt(List<ResultItem> results, bool bare, string title, string subtitle)
     {
         if (!bare) return results;
-        var header = ResultItem.Info("⌨️", title, subtitle);
+        var header = ResultItem.Info(Glyphs.Keyboard, title, subtitle);
         header.Score = 1000; // keep the "keep typing" row above the recent items beneath it
         var prompt = new List<ResultItem> { header };
         prompt.AddRange(results);
@@ -208,7 +209,8 @@ public sealed class SearchEngine : IDisposable
         {
             results.Add(new ResultItem
             {
-                Icon = "🚀",
+                Icon = Glyphs.App,
+                IconImage = IconExtractor.ForApp(application),
                 Title = application.Name,
                 Subtitle = $"Application · {application.Location}",
                 Kind = ResultKind.Application,
@@ -229,7 +231,7 @@ public sealed class SearchEngine : IDisposable
 
         return new ResultItem
         {
-            Icon = "🟰",
+            Icon = Glyphs.Calculator,
             Title = calculated.Formatted,
             Subtitle = subtitle,
             Kind = ResultKind.Calculator,
@@ -263,7 +265,8 @@ public sealed class SearchEngine : IDisposable
 
             results.Add(new ResultItem
             {
-                Icon = entry.IsDirectory ? "📁" : IconForExtension(Path.GetExtension(entry.Path)),
+                Icon = entry.IsDirectory ? Glyphs.Folder : IconForExtension(Path.GetExtension(entry.Path)),
+                IconImage = IconExtractor.ForFile(entry.Path, entry.IsDirectory),
                 Title = entry.Name,
                 Subtitle = $"{meta} — {folder}",
                 Kind = ResultKind.File,
@@ -287,7 +290,7 @@ public sealed class SearchEngine : IDisposable
         {
             results.Add(new ResultItem
             {
-                Icon = "⭐",
+                Icon = Glyphs.Star,
                 Title = bookmark.Title,
                 Subtitle = $"{bookmark.Browser} · {bookmark.Folder} — {bookmark.Url}",
                 Kind = ResultKind.Bookmark,
@@ -308,7 +311,7 @@ public sealed class SearchEngine : IDisposable
         {
             results.Add(new ResultItem
             {
-                Icon = "🐘",
+                Icon = Glyphs.Note,
                 Title = note.Title,
                 Subtitle = EvernoteIndex.Describe(note),
                 Kind = ResultKind.Note,
@@ -321,7 +324,7 @@ public sealed class SearchEngine : IDisposable
         }
 
         if (results.Count == 0 && Evernote.Error != null && query.Length > 0)
-            results.Add(ResultItem.Info("🐘", "Evernote", Evernote.Error, ResultKind.Error));
+            results.Add(ResultItem.Info(Glyphs.Note, "Evernote", Evernote.Error, ResultKind.Error));
         return Rank(results, notes.Count);
     }
 
@@ -333,7 +336,7 @@ public sealed class SearchEngine : IDisposable
         {
             results.Add(new ResultItem
             {
-                Icon = "⚙️",
+                Icon = Glyphs.Settings,
                 Title = page.Name,
                 Subtitle = $"Windows {page.Group} · {page.Target}",
                 Kind = ResultKind.Setting,
@@ -376,11 +379,11 @@ public sealed class SearchEngine : IDisposable
             });
         }
 
-        Add("Winfred Settings", "Hotkey, search engines, files, notes, 1Password", "⚙️",
+        Add("Winfred Settings", "Hotkey, search engines, files, notes, 1Password", Glyphs.Settings,
             () => OpenSettings?.Invoke(), "winfred", "settings", "preferences", "prefs", "config");
-        Add("Rebuild file index", $"{Files.Count:N0} items currently indexed", "🔄",
+        Add("Rebuild file index", $"{Files.Count:N0} items currently indexed", Glyphs.Refresh,
             () => Files.Rebuild(), "reindex", "rebuild");
-        Add("Reload Winfred config", Config.FilePath, "♻️",
+        Add("Reload Winfred config", Config.FilePath, Glyphs.Refresh,
             Config.Load, "reload");
         return results;
     }
@@ -411,7 +414,7 @@ public sealed class SearchEngine : IDisposable
             if (!enabled || !keyword.StartsWith(head, StringComparison.OrdinalIgnoreCase)) continue;
             yield return new ResultItem
             {
-                Icon = "⌨️",
+                Icon = Glyphs.Keyboard,
                 Title = $"{keyword} — {label}",
                 Subtitle = $"Type: {keyword} <your search>",
                 Kind = ResultKind.Hint,
@@ -444,33 +447,6 @@ public sealed class SearchEngine : IDisposable
         CtrlEnter = ResultAction.Of("copy URL",
             () => ClipboardGuard.CopyPlain(shortcut.Url.Replace("{q}", Uri.EscapeDataString(terms)))),
     };
-
-    private List<ResultItem> Hints(Config cfg)
-    {
-        var hints = new List<ResultItem>
-        {
-            ResultItem.Info("🔍", $"Type anything to search {cfg.DefaultSearchName}",
-                "…or an application, a sum like “10+25”, a file, bookmark, or note"),
-        };
-
-        if (cfg.Searches.Count > 0)
-            hints.Add(ResultItem.Info("⌨️", "Keyword searches: " + string.Join(", ", cfg.Searches.Keys.Take(8)),
-                "e.g. “goog cats” searches Google for cats"));
-
-        foreach (var (keyword, label, enabled) in ProviderKeywords(cfg).Take(5))
-            if (enabled && keyword.Length > 0)
-                hints.Add(ResultItem.Info("•", $"{keyword} — {label}", $"Type “{keyword} ” then your search"));
-
-        hints.Add(new ResultItem
-        {
-            Icon = "⚙️",
-            Title = "Winfred Settings",
-            Subtitle = "Hotkey, search engines, indexed folders, 1Password behaviour",
-            Kind = ResultKind.Action,
-            Enter = ResultAction.Of("open", () => OpenSettings?.Invoke()),
-        });
-        return hints;
-    }
 
     // ---------- helpers ----------
 
@@ -546,19 +522,19 @@ public sealed class SearchEngine : IDisposable
 
     private static string IconForExtension(string extension) => extension.ToLowerInvariant() switch
     {
-        ".pdf" => "📕",
-        ".doc" or ".docx" or ".odt" or ".rtf" => "📄",
-        ".xls" or ".xlsx" or ".csv" or ".ods" => "📊",
-        ".ppt" or ".pptx" or ".odp" => "📽️",
-        ".txt" or ".md" or ".log" => "📃",
-        ".png" or ".jpg" or ".jpeg" or ".gif" or ".bmp" or ".webp" or ".svg" or ".heic" => "🖼️",
-        ".mp3" or ".wav" or ".flac" or ".m4a" or ".ogg" => "🎵",
-        ".mp4" or ".mkv" or ".mov" or ".avi" or ".webm" => "🎬",
-        ".zip" or ".rar" or ".7z" or ".tar" or ".gz" => "🗜️",
-        ".exe" or ".msi" or ".bat" or ".cmd" or ".ps1" => "⚙️",
-        ".cs" or ".js" or ".ts" or ".py" or ".java" or ".cpp" or ".c" or ".go" or ".rs" or ".rb" => "💻",
-        ".json" or ".xml" or ".yaml" or ".yml" or ".toml" or ".ini" => "🧾",
-        _ => "📄",
+        ".pdf" => Glyphs.Pdf,
+        ".doc" or ".docx" or ".odt" or ".rtf" => Glyphs.Document,
+        ".xls" or ".xlsx" or ".csv" or ".ods" => Glyphs.Spreadsheet,
+        ".ppt" or ".pptx" or ".odp" => Glyphs.Video,
+        ".txt" or ".md" or ".log" => Glyphs.Document,
+        ".png" or ".jpg" or ".jpeg" or ".gif" or ".bmp" or ".webp" or ".svg" or ".heic" => Glyphs.Picture,
+        ".mp3" or ".wav" or ".flac" or ".m4a" or ".ogg" => Glyphs.Music,
+        ".mp4" or ".mkv" or ".mov" or ".avi" or ".webm" => Glyphs.Video,
+        ".zip" or ".rar" or ".7z" or ".tar" or ".gz" => Glyphs.Zip,
+        ".exe" or ".msi" or ".bat" or ".cmd" or ".ps1" => Glyphs.Settings,
+        ".cs" or ".js" or ".ts" or ".py" or ".java" or ".cpp" or ".c" or ".go" or ".rs" or ".rb" => Glyphs.Code,
+        ".json" or ".xml" or ".yaml" or ".yml" or ".toml" or ".ini" => Glyphs.Code,
+        _ => Glyphs.Document,
     };
 
     private void OnApplicationsChanged() => ResultsChanged?.Invoke();

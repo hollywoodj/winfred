@@ -14,7 +14,7 @@
          twenty platforms' worth. Still framework-dependent: needs the .NET 8 Desktop Runtime. -->
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>false</SelfContained>
-    <!-- The top-hat mark: shell/taskbar icon for the exe, and a WPF resource so the
+    <!-- The bowler-hat mark: exe, taskbar and tray icon, and a WPF resource so the
          tray icon and settings window can load the same file at runtime. -->
     <ApplicationIcon>Assets\winfred.ico</ApplicationIcon>
   </PropertyGroup>

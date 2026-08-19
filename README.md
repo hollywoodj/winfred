@@ -41,8 +41,9 @@ switched in or out of those unprefixed results in Settings.
 | --- | ---- |
 | `↑` `↓` `PgUp` `PgDn` | move the selection |
 | `Enter` | run the highlighted result |
-| `Ctrl`/`Shift`/`Alt` + `Enter` | the alternate actions shown on the right of the row |
-| `Ctrl`+`1`…`9` | run the *n*th result directly |
+| `Ctrl`/`Shift`/`Alt` + `Enter` | the alternate action (subtitle updates while the key is held) |
+| `Ctrl`+`1`…`9` | run the result numbered on the right |
+| `Ctrl`+`,` | open Settings |
 | `Tab` | autocomplete a keyword or file name |
 | `Esc` | dismiss |
 
@@ -52,7 +53,7 @@ Nine sections, all live-applied on **Apply**:
 
 - **General** — hotkey (double-tap modifier *or* a recorded key combination), start with
   Windows, theme (dark/midnight/light), result count, window width, vertical position,
-  font scale, placeholder text.
+  font scale, placeholder text, numbered result shortcuts, and modifier-key action hints.
 - **Search Engines** — add, duplicate, remove and test keyword searches; pick the fallback
   engine. `{q}` in the URL is replaced with the URL-encoded query.
 - **Files** — which folders to index and whether to recurse, folder/extension filters,
@@ -195,9 +196,9 @@ The app needs the .NET 8 Desktop Runtime, which ships on most systems.
 - `FuzzyMatcher.cs` — subsequence scoring with word-boundary, prefix and density rules.
 - `OnePasswordProvider.cs` + `AutoFill.cs` — `op` for the data, guarded `SendInput` for the fill.
 - `SettingsWindow.xaml` — the settings UI; edits a clone of the config so Cancel is real.
-- `Branding.cs` — the top-hat mark. `Assets\winfred.ico` is the exe, taskbar and tray icon;
+- `Branding.cs` — the bowler-hat mark. `Assets\winfred.ico` is the exe, taskbar and tray icon;
   the `WinHatMark` template in `App.xaml` draws the same hat as vector XAML for the launcher
-  and the settings sidebar. Regenerate the .ico with `.	ools\make-icon.ps1` after changing
+  and the settings sidebar. Regenerate the .ico with `.\tools\make-icon.ps1` after changing
   the geometry — both copies are drawn in the same 256x256 space, so keep them in step.
 
 State lives in `%APPDATA%\Winfred`: `config.json`, `usage.json`, `file-index.bin`,

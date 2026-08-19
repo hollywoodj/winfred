@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -13,6 +14,7 @@ public partial class MainWindow : Window
     public SearchEngine Engine { get; } = new();
 
     private string _lastQuery = "";
+    private bool _openingSettings;
 
     public MainWindow()
     {
@@ -32,16 +34,20 @@ public partial class MainWindow : Window
 
         Width = appearance.WindowWidth;
         Placeholder.Text = appearance.Placeholder;
-        Results.MaxHeight = Math.Max(120, appearance.MaxResults * 52 * appearance.FontScale);
+        Results.MaxHeight = Math.Max(120, appearance.MaxResults * 50 * appearance.FontScale);
         // The hat mark rides alongside the input, so it scales with it.
-        HatMark.Width = HatMark.Height = 30.0 * appearance.FontScale;
+        HatMark.Width = HatMark.Height = 40.0 * appearance.FontScale;
 
         var resources = Application.Current.Resources;
-        resources["WinInputSize"] = 26.0 * appearance.FontScale;
-        resources["WinIconSize"] = 22.0 * appearance.FontScale;
-        resources["WinTitleSize"] = 16.0 * appearance.FontScale;
+        resources["WinInputSize"] = 24.0 * appearance.FontScale;
+        resources["WinIconSize"] = 20.0 * appearance.FontScale;
+        resources["WinResultIconSize"] = 36.0 * appearance.FontScale;
+        resources["WinTitleSize"] = 18.0 * appearance.FontScale;
         resources["WinSubSize"] = 12.0 * appearance.FontScale;
         resources["WinHintSize"] = 11.0 * appearance.FontScale;
+        resources["WinShortcutSize"] = 16.0 * appearance.FontScale;
+
+        if (IsVisible) RunQuery();
     }
 
     public void Toggle()
@@ -61,7 +67,11 @@ public partial class MainWindow : Window
         Keyboard.Focus(Input);
     }
 
-    public void HideLauncher() => Hide();
+    public void HideLauncher()
+    {
+        ModifierState.Clear();
+        Hide();
+    }
 
     private void PositionOnActiveScreen()
     {
@@ -96,7 +106,30 @@ public partial class MainWindow : Window
         Activate();
     }
 
-    private void Window_Deactivated(object? sender, EventArgs e) => Hide();
+    private void Window_Deactivated(object? sender, EventArgs e)
+    {
+        if (_openingSettings) return;
+        HideLauncher();
+    }
+
+    private void Cog_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        e.Handled = true;
+        OpenSettings();
+    }
+
+    private void OpenSettings()
+    {
+        _openingSettings = true;
+        try
+        {
+            SearchEngine.OpenSettings?.Invoke();
+        }
+        finally
+        {
+            _openingSettings = false;
+        }
+    }
 
     private void Input_TextChanged(object sender, TextChangedEventArgs e)
     {
@@ -108,10 +141,40 @@ public partial class MainWindow : Window
     {
         _lastQuery = Input.Text;
         var items = Engine.Query(Input.Text, () => Dispatcher.BeginInvoke(RunQuery));
+        AssignShortcuts(items);
         Results.ItemsSource = items;
-        Results.Visibility = items.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-        if (items.Count > 0)
+        bool any = items.Count > 0;
+        Results.Visibility = any ? Visibility.Visible : Visibility.Collapsed;
+        Divider.Visibility = any ? Visibility.Visible : Visibility.Collapsed;
+        if (any)
             Results.SelectedIndex = 0;
+        UpdateTypeahead();
+    }
+
+    private static void AssignShortcuts(List<ResultItem> items)
+    {
+        foreach (var item in items) item.Shortcut = "";
+        if (!Config.Current.Appearance.ShowResultShortcuts) return;
+        for (int i = 0; i < items.Count && i < 9; i++)
+            items[i].Shortcut = (i + 1).ToString();
+    }
+
+    private void Results_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateTypeahead();
+
+    /// <summary>Ghost-completes the selected result's Tab expansion in the search field, like Alfred.</summary>
+    private void UpdateTypeahead()
+    {
+        Typeahead.Inlines.Clear();
+        string typed = Input.Text;
+        if (typed.Length == 0 ||
+            Results.SelectedItem is not ResultItem { AutoComplete: { Length: > 0 } completion } ||
+            !completion.StartsWith(typed, StringComparison.OrdinalIgnoreCase) ||
+            completion.Length <= typed.Length)
+            return;
+
+        var placeholder = TryFindResource("WinPlaceholder") as Brush ?? Brushes.Gray;
+        Typeahead.Inlines.Add(new Run(typed) { Foreground = Brushes.Transparent });
+        Typeahead.Inlines.Add(new Run(completion[typed.Length..]) { Foreground = placeholder });
     }
 
     private void Window_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -119,6 +182,15 @@ public partial class MainWindow : Window
         var modifiers = Keyboard.Modifiers;
         // With Alt held WPF reports Key.System and puts the real key in SystemKey.
         var key = e.Key == Key.System ? e.SystemKey : e.Key;
+        ModifierState.Capture();
+
+        // Ctrl+, opens settings, like Alfred's Cmd+,.
+        if ((modifiers & ModifierKeys.Control) != 0 && key is Key.OemComma or Key.Comma)
+        {
+            e.Handled = true;
+            OpenSettings();
+            return;
+        }
 
         // Ctrl+1…9 runs that result directly, like Alfred's Cmd+number.
         if ((modifiers & ModifierKeys.Control) != 0 && key is >= Key.D1 and <= Key.D9)
@@ -169,6 +241,9 @@ public partial class MainWindow : Window
         }
     }
 
+    private void Window_PreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e) =>
+        ModifierState.Capture();
+
     private void AutoComplete()
     {
         if (Results.SelectedItem is not ResultItem { AutoComplete: { Length: > 0 } completion }) return;
@@ -181,6 +256,14 @@ public partial class MainWindow : Window
         if (Results.Items.Count == 0) return;
         Results.SelectedIndex = Math.Clamp(Results.SelectedIndex + delta, 0, Results.Items.Count - 1);
         Results.ScrollIntoView(Results.SelectedItem);
+    }
+
+    private void Results_PreviewMouseMove(object sender, MouseEventArgs e)
+    {
+        if (e.LeftButton == MouseButtonState.Pressed) return;
+        if (ItemsControl.ContainerFromElement(Results, e.OriginalSource as DependencyObject)
+            is ListBoxItem row)
+            Results.SelectedItem = row.DataContext;
     }
 
     private void Results_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
