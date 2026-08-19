@@ -6,18 +6,23 @@ round of search-results gaps: numbered shortcuts, real shell icons, bowler-hat
 mark, empty-query chrome, type-ahead, modifier-key subtitles, and a preferences
 cog.
 
-This note is for the next agent. It lists **ten remaining UI matches** against
-Alfred, in the order they most change how the launcher *looks and feels*, plus
-what is already done so those changes are not re-implemented or undone.
+This note is for the next agent. It lists **thirty remaining matches**: ten
+that close the search-row visual gap, then twenty that look past the result
+list — Alfred Powerpack surfaces, PowerToys Run / Flow Launcher habits, and
+Windows-only opportunities. What is already shipped is listed so those
+changes are not re-implemented or undone.
 
 Visual QA has to happen on **Windows**. This cloud environment is Linux and
 cannot run the WPF app. Rebuild with `.\build.ps1` and use Settings → General →
 **Preview launcher**.
 
-Official Alfred references (do not copy trademarked artwork):
+References (do not copy trademarked Alfred artwork):
 
 - [Appearance & Theming](https://www.alfredapp.com/help/appearance/)
 - [Cheatsheet](https://www.alfredapp.com/help/getting-started/cheatsheet/)
+- [File Search & Navigation](https://www.alfredapp.com/help/features/file-search/)
+- [Clipboard History](https://www.alfredapp.com/help/features/clipboard/)
+- [PowerToys Run](https://learn.microsoft.com/en-us/windows/powertoys/run) (Window Walker, `>`, units)
 
 ---
 
@@ -348,35 +353,495 @@ selected-row path:
 
 ---
 
-## Stretch (after the ten)
+## Twenty more — look past the search row
+
+Items 1–10 make the *panel* look like Alfred. These twenty make *using* it
+feel like Alfred (and like a good Windows launcher). Sources mixed in: Alfred
+Powerpack, PowerToys Run, Flow Launcher, Listary, and gaps in Winfred’s own
+settings/tray/error surfaces.
+
+| # | Gap | Closest analog |
+| --- | --- | --- |
+| 11 | Browse folders from `~` / `\` | Alfred file navigation |
+| 12 | Multi-file buffer chips | Alfred file buffer |
+| 13 | Searchable clipboard history | Alfred clipboard (opt-in) |
+| 14 | Snippets | Alfred snippets |
+| 15 | lock / sleep / shutdown / mute | Alfred system commands |
+| 16 | `>` run in Terminal | Alfred `>` / PowerToys shell |
+| 17 | Switch to (or kill) a running window | PowerToys Window Walker |
+| 18 | `define` / `spell` | Alfred dictionary |
+| 19 | ↑ query history | shells, most launchers |
+| 20 | leading space, `in`, Ctrl+Enter web | Alfred keywords |
+| 21 | Everything / Windows Search backend | Flow Launcher, Listary |
+| 22 | Admin / folder buttons on the selected row | PowerToys Run |
+| 23 | Status line instead of tray balloons | Alfred in-panel status |
+| 24 | Search Settings + `?hotkeys` + live preview | Alfred Preferences |
+| 25 | Which screen, DPI, high contrast | Alfred Appearance Options |
+| 26 | IME, Narrator, reduced motion | platform-native |
+| 27 | Now-playing mini-player | Alfred Music / SMTC |
+| 28 | Contacts | Alfred Contacts |
+| 29 | JSON keyword workflows | Alfred Workflows lite |
+| 30 | Units / time / hash + Large Type on any row | PowerToys converter |
+
+Each item is independently shippable. 11–12 assume the actions panel (7) exists
+or they grow a tiny one of their own.
+
+### 11. File-system navigation (`~`, `\`, drive letters)
+
+**Elsewhere:** Alfred: type `~` or `/` and you are *in* a folder. Enter
+descends, Backspace goes up, Tab completes like a shell, `.` toggles hidden
+files. A small cog in that view sorts by name/date.
+
+**Winfred:** `open` / `find` fuzzy-search an index. There is no browse mode.
+Typing `C:\` or `~\Documents` is not special.
+
+**Do this:** If the query is a path prefix (`~`, `\`, `/`, `X:\`, `\\server\`),
+switch the list to the directory’s children (not the indexer). Enter on a
+folder replaces the query with that path + `\`; Backspace at end-of-input
+pops a segment. Tab still autocompletes the selected name. A footer chip
+(“Name · Date · Folders first”) is enough; skip a full cog for v1.
+
+**Files:** new `FileNavigator.cs`, `SearchEngine.Query` early path, `MainWindow`
+Backspace handling (only when the caret is at the end and the query is a path).
+
+---
+
+### 12. File buffer (multi-select chips)
+
+**Elsewhere:** Alfred Alt+↑ adds the selected file to a buffer; Alt+↓ adds and
+moves on; Alt+← pops; Alt+→ actions the lot. A strip of icons sits under the
+search field.
+
+**Winfred:** One result, one action. No multi-file verb.
+
+**Do this:** A `FileBuffer` (max ~20 paths) and a horizontal `ItemsControl`
+under the divider. Chips: icon + truncated name + ×. Alt+Up/Down/Left/Right
+as Alfred (on Windows Alt is already a modifier for “open folder” on Enter —
+**buffer chords should be Alt+arrow, not Alt+Enter**, so they do not collide).
+Alt+→ opens the actions panel (item 7) targeting the whole buffer (copy,
+move, zip, attach to mail).
+
+**Files:** `FileBuffer.cs`, `MainWindow.xaml` chip strip, `MainWindow.xaml.cs`.
+
+---
+
+### 13. Clipboard history viewer
+
+**Elsewhere:** Alfred `⌥⌘C` — searchable clips (text, images, file lists),
+Enter pastes into the previous app, `clear` pauses/wipes, Cmd+S saves a
+snippet. Disabled until the user opts in.
+
+**Winfred:** Clipboard is write-only (`ClipboardGuard`). Errors and copied
+calculator answers never come back.
+
+**Do this:** Opt-in Settings page **Clipboard**. Background watcher
+(`Clipboard.Changed` / Win32 listener) stores text (+ optional file drops)
+to `%APPDATA%\Winfred\clipboard.db`, skip if the foreground window is a
+password box (`GetGUIThreadInfo` + ES_PASSWORD) or the clip came from
+Winfred’s own secret copy. Keyword `clip` or a dedicated hotkey. Enter:
+copy + optional `SendInput` Ctrl+V to the previous hwnd after hide
+(remember hwnd in `ShowLauncher`). Images as thumbnails in the row.
+
+**Files:** `ClipboardHistory.cs`, Settings panel, `SearchEngine` keyword,
+`MainWindow` “last foreground hwnd”.
+
+**Watch:** Privacy default **off**. Do not log 1Password copies.
+
+---
+
+### 14. Snippets and (optional) expansion
+
+**Elsewhere:** Alfred `snip` keyword + automatic expansion of abbreviations.
+Snippets can include `{date}`, `{clipboard}`.
+
+**Winfred:** Nothing. Users retype signatures and issue templates.
+
+**Do this:** Settings list (name, keyword, body, expand-in-place yes/no).
+`snip foo` lists matches; Enter copies or pastes into the previous app.
+Expansion v1 can be **launcher-only** (type the keyword in Winfred). Global
+expansion needs the existing `KeyboardHook` — do it later, and never expand
+in password fields.
+
+Placeholders: `{date}`, `{time}`, `{clipboard}`, `{cursor}`.
+
+**Files:** `SnippetStore.cs`, Settings **Snippets** nav item, `SearchEngine`.
+
+---
+
+### 15. System commands with a confirm row
+
+**Elsewhere:** Alfred `lock`, `sleep`, `shutdown`, `restart`, `emptytrash`,
+`mute`, `volup`, `screensaver`, `quit`. Destructive ones wait for a second
+Enter.
+
+**Winfred:** `BuiltInActions` is Settings / rebuild index / reload config.
+No power or volume verbs.
+
+**Do this:** Results for lock (`LockWorkStation`), sleep, hibernate, sign
+out, restart, shutdown, empty Recycle Bin, mute/vol up/down, display off,
+start screensaver. Match on the verb *and* fuzzy title. Shutdown/restart/
+empty-trash: first Enter turns the row into **“Enter again to confirm”**
+(`HidesWindow = false`); second Enter within ~3s runs it. Volume can call
+`keybd_event` VK_VOLUME_*.
+
+**Files:** `SystemCommands.cs`, `SearchEngine.BuiltInActions`.
+
+---
+
+### 16. Shell prefix `>`
+
+**Elsewhere:** Alfred `>` runs in Terminal.app. PowerToys Run `> Shell:startup`
+and arbitrary cmd.
+
+**Winfred:** No shell. URLs and `ms-settings:` only.
+
+**Do this:** Query starting with `>` (or `> `) shows “Run in Windows
+Terminal” / “Run in cmd” / “Run in PowerShell”, plus `shell:` folder names.
+Enter: `wt.exe` / `pwsh -NoExit -Command` with the remainder. Ctrl+Enter:
+run hidden and copy stdout (timeout ~5s) as a result/notification.
+Settings: default shell, “admin” as Shift+Enter (`runas`).
+
+**Files:** `ShellRunner.cs`, `SearchEngine.Query` prefix, Settings Advanced.
+
+**Watch:** Do not silently elevate. Quote the command you display.
+
+---
+
+### 17. Window switcher and process kill
+
+**Elsewhere:** PowerToys Window Walker (`< outlook`). Alfred `quit` / `hide`
+on the frontmost app. Flow Launcher kills by name.
+
+**Winfred:** Can launch a second copy of an app; cannot jump to the one
+already open. `ApplicationIndex.Launch` always `Process.Start`.
+
+**Do this:** Enumerate visible top-level windows (`EnumWindows`), skip
+toolwindows. Default results: if an app is running, prefer **“Switch to …”**
+(score bump) over launching again; Ctrl+Enter launches a new instance.
+Keyword `<` or `win` filters by title/process. Kill: Alt+Enter or an action
+(confirm for elevated / explorer).
+
+**Files:** `WindowIndex.cs`, `SearchEngine.ApplicationResults`,
+`ApplicationIndex.Launch`.
+
+---
+
+### 18. Dictionary and spell
+
+**Elsewhere:** Alfred `define word` / `spell`. PowerToys has a dictionary
+plugin.
+
+**Winfred:** Unknown words fall through to Google.
+
+**Do this:** `define ` uses `System.Windows.Documents.Speller` if available,
+else a small bundled word list, else Wiktionary URL as a result (not a silent
+browser open). `spell ` shows Hunspell/OS suggestions as rows; Enter copies
+the word. Optional: a definition subtitle under the exact match in default
+results when the query is a single dictionary word and nothing else scored
+higher.
+
+**Files:** `DictionaryProvider.cs`, `SearchEngine.RouteKeyword`.
+
+---
+
+### 19. Query history (↑ in an empty-ish field)
+
+**Elsewhere:** Shells and many launchers recall the last queries. Alfred
+learns picks; users still want “what did I type two summons ago?”
+
+**Winfred:** `Usage` boosts *results* for a query; the search field always
+opens blank. There is no up-arrow history. (`Usage` is referenced from
+`App` / `SearchEngine` / `SettingsWindow` — keep that store; this is a
+separate ring buffer of raw strings.)
+
+**Do this:** Persist last ~50 non-secret queries (`clip` / `1p` contents
+excluded). When the field is empty, ↑ cycles history into the box (and
+re-runs). When the field has text, ↑ stays “move selection” as today.
+`Ctrl+R` can re-run the last query without cycling.
+
+**Files:** `QueryHistory.cs`, `MainWindow` key routing, Settings Advanced
+“clear history”.
+
+---
+
+### 20. Keyword completeness: leading space, `in`, `tags`, Ctrl+Enter web
+
+**Elsewhere:** Alfred: leading space = file search; `in` = contents; `tags`
+= Finder tags; **Ctrl+Enter always** searches the web for the typed query
+even when an app is selected. Alt+Enter searches in Finder.
+
+**Winfred:** `open` / `find` only. Ctrl+Enter is the *row’s* alternate
+action, so you cannot force a Google search when Chrome is highlighted.
+No content search.
+
+**Do this:**
+
+- Query starting with a space → file provider (same as `open`).
+- Keyword `in` → Everything (item 21) or `findstr`/`Windows Search` over
+  indexed folders; show a “searching contents…” row while async.
+- Keyword `tag` → NTFS alternate-data / Explorer tags if cheap; otherwise
+  skip and document it.
+- **Global** Ctrl+Enter: if the selected row already defines CtrlEnter,
+  keep it; add a fallback — when *no* CtrlEnter, or when Ctrl+Shift+Enter,
+  open the default web search for the raw query. Surface this in the
+  subtitle when Ctrl is held and the row has no Ctrl action.
+
+**Files:** `SearchEngine`, `MainWindow.ExecuteSelected`, `Config` keywords.
+
+---
+
+### 21. Optional Everything / Windows Search backend
+
+**Elsewhere:** Flow Launcher and Listary sit on [voidtools Everything](https://www.voidtools.com/)
+and feel instant across the whole disk. Alfred has Spotlight. Winfred’s
+own walker is capped and folder-scoped on purpose.
+
+**Winfred:** `FileIndexer` walks Desktop/Documents/Downloads. No ES SDK, no
+Windows Search ISearchQueryHelper.
+
+**Do this:** Settings → Files: **Backend** = Internal (default) | Everything
+| Windows Search. Everything: detect `Everything64.dll` / named pipe; if
+the service is missing, one result “Install Everything to search the whole
+PC”. Keep the internal index for people who do not want a third-party
+service. UI: subtitle should say which backend hit (`Everything · C:\…`).
+
+**Files:** `EverythingClient.cs`, `FileIndexer` (or a `IFileSource`
+interface), Settings Files panel.
+
+---
+
+### 22. Selected-row accessory buttons
+
+**Elsewhere:** PowerToys Run puts small buttons on the highlighted row
+(run as admin, open folder). Alfred puts those in the action panel, but
+the extra chrome is how Windows users discover them without item 7.
+
+**Winfred:** The only extra chrome is the `1`–`9` digit. Mouse users who
+never hold Ctrl never see “reveal”.
+
+**Do this:** When a row is selected, fade in 1–3 22px buttons on the right
+of the title (left of the shortcut number): folder, admin (apps), copy.
+Click must not also fire `PreviewMouseLeftButtonDown` → Enter. Keyboard:
+the buttons are the same as Ctrl/Shift/Alt+Enter, not a new focus trap.
+
+**Files:** `MainWindow.xaml` item template, `Models.ResultItem` flags
+`CanRunAsAdmin`, `CanReveal`.
+
+**Watch:** Admin for `.exe` is `ProcessStartInfo.Verb = "runas"`; for Store
+apps, hide the button.
+
+---
+
+### 23. In-window status instead of tray balloons
+
+**Elsewhere:** Alfred shows “indexing…” / errors *in the results*.
+PowerToys uses a progress line. Balloon tips on modern Windows are easy to
+miss and feel like 2006.
+
+**Winfred:** `Notifier` → `NotifyIcon.ShowBalloonTip`. File rebuild,
+1Password failures, config errors all toast in the tray. `FileIndexer.IsBuilding`
+is not shown in the launcher. Evernote has an info row; files do not.
+
+**Do this:** A one-line status under the search field (or a sticky first
+result) bound to a `LauncherStatus` singleton: indexing count, “Unlock
+1Password”, last error, clipboard-cleared. Auto-hide after a few seconds
+unless it is a blocking error. Keep the tray for when the launcher is
+hidden. First-run balloon can stay.
+
+**Files:** `LauncherStatus.cs`, `MainWindow.xaml`, `App.xaml.cs` Notifier
+handler, `FileIndexer.IndexChanged`.
+
+---
+
+### 24. Settings that search themselves (and a live appearance preview)
+
+**Elsewhere:** Alfred Preferences filter by typing; `?hotkeys` / `?keywords`
+in the launcher jumps to the right pane. Appearance is edited against a
+live preview of the panel.
+
+**Winfred:** Nine sidebar emoji rows, no search. `?` does nothing. “Preview
+launcher” is a separate button that hides Settings (`ShowSettings` calls
+`HideLauncher` first, then the launcher’s `Deactivated` is guarded by
+`_openingSettings` only on the cog path — preview is easy to get wrong).
+Appearance sliders do not show the launcher until Apply.
+
+**Do this:**
+
+- Filter the sidebar and jump to the matching control as the user types in
+  a Settings search box (Ctrl+F).
+- Launcher queries `?` / `?hotkeys` / `?keywords` list features; Enter
+  opens Settings on that page (`SearchEngine.OpenSettings` needs a section
+  argument).
+- Appearance: an embedded *non-activating* mini `MainWindow` (or a cloned
+  visual) at the bottom of General, updated on every slider tick from the
+  draft config — not only after Apply.
+
+**Files:** `SettingsWindow.xaml`, `SearchEngine.OpenSettings`, `MainWindow`
+preview owner flags.
+
+---
+
+### 25. Which screen, per-monitor DPI, high contrast
+
+**Elsewhere:** Alfred Appearance Options: default / mouse / active screen,
+plus a position grid. Themes can follow accessibility contrast.
+
+**Winfred:** Always the monitor under the **cursor**, `TopOffsetPercent`
+from the top. DPI is sampled once from the window. No high-contrast
+palette. Mixed-DPI (laptop 150% + 100% monitor) can place the panel on
+the wrong origin if the HWND is created on the other screen.
+
+**Do this:** `Appearance.Screen` = `mouse` | `active` | `primary`.
+Re-query DPI from the *target* screen (`HwndSource.CompositionTarget`).
+Subscribe to `SystemEvents.DisplaySettingsChanged` and
+`SystemParameters.HighContrast`. High contrast: skip acrylic (item 4),
+use system `Window`/`Highlight` colours, 2px borders.
+
+**Files:** `MainWindow.PositionOnActiveScreen`, `Theme.cs`, `Config`,
+Settings General.
+
+---
+
+### 26. Keyboard, IME, and screen readers
+
+**Elsewhere:** Launchers that feel native survive CJK composition, Narrator,
+and “reduce motion”.
+
+**Winfred:** `TextBox` has no `InputMethod` handling; `TextChanged` runs
+the query on every composition update (flicker for IME). Rows are
+`Focusable=False` with no `AutomationProperties.Name`. Settings DataGrids
+are mouse-first. Animations (item 5) have no reduced-motion check yet.
+
+**Do this:** Ignore `TextChanged` while `e.Changes` are composition, or
+listen to `TextCompositionManager`. Set `AutomationProperties.Name` on
+each row to `Title + Subtitle`. Settings: tab order, AccessKeys on
+sidebar. Honour `SystemParameters.ClientAreaAnimation` and
+`UISettings.AnimationsEnabled`. Optional: larger hit targets when
+`Tablet.TabletDevices` is non-empty.
+
+**Files:** `MainWindow.xaml.cs`, item template, `SettingsWindow`.
+
+---
+
+### 27. Media mini-player
+
+**Elsewhere:** Alfred Music Mini Player. Windows has System Media Transport
+Controls — one API for Spotify, Apple Music, Groove, browser tabs.
+
+**Winfred:** No `play` / `pause` / `next` / `mute` beyond what the user
+could type into Settings search.
+
+**Do this:** Keyword `music` (or empty-query media when SMTC is active)
+shows artwork + title + artist as a custom result (or a slim header above
+the list). Enter play/pause; Ctrl/Shift next/prev. Volume verbs in item
+15 can target SMTC when a session exists. Artwork from
+`GlobalSystemMediaTransportControlsSession`.
+
+**Files:** `MediaSession.cs`, `MainWindow` optional header, `SearchEngine`.
+
+---
+
+### 28. Contacts
+
+**Elsewhere:** Alfred searches Contacts.app, actions a field (mail, call,
+copy). Windows: People / Microsoft Graph / Outlook PST is a maze; the
+practical source is the Windows Contacts folder (`*.contact` XML) plus
+optional Graph if the user is signed in.
+
+**Winfred:** No people provider.
+
+**Do this:** Index `%USERPROFILE%\Contacts` and, if present, Outlook via
+COM only when the user enables it (slow, opt-in). Results: name, email,
+phone. Enter = mail (`mailto:`), Ctrl+Enter = copy, Shift+Enter = tel:
+link. Keyword `con` / `email`. Do not require Graph for v1.
+
+**Files:** `ContactIndex.cs`, Settings (enable Outlook), `SearchEngine`.
+
+---
+
+### 29. Lightweight workflows (keyword → command)
+
+**Elsewhere:** Alfred Workflows and Flow’s plugin store are the reason
+people stay. Winfred should not build a node editor first.
+
+**Winfred:** Hard-coded providers. No extension point. `SearchShortcut` is
+URL-only.
+
+**Do this:** A `workflows\` folder of JSON:
+
+```json
+{ "keyword": "ghp", "title": "GitHub profile",
+  "command": "https://github.com/{query}", "args": "url" }
+```
+
+`args`: `url` | `shell` | `clipboard`. List them in Settings, import a
+file. Launcher `workflow` keyword lists installed ones. A later store can
+wait; the JSON schema is the product. Sandbox: `shell` workflows prompt
+the first time.
+
+**Files:** `WorkflowLoader.cs`, Settings **Workflows**, `SearchEngine.RouteKeyword`.
+
+---
+
+### 30. Units, time, hashes — calculator adjacent — plus Large Type for any text
+
+**Elsewhere:** PowerToys `%%` / `==` unit converter, time/date, GUID, hash.
+Alfred Large Type is not calculator-only (`large type` action on any text).
+Winfred Large Type is dark-only and calculator-only (`LargeTypeWindow`).
+
+**Do this:**
+
+- Parse `10 ft in m`, `100 usd in eur` (static table + optional ECB/cache
+  later), `utc`, `unix 0`, `guid`, `md5 …` / `sha256 …`.
+- Show as `ResultKind.Calculator` so Large Type / copy still work.
+- Shift+Enter Large Type on **any** selected title (files, 1Password
+  usernames, calc). Theme-follow the overlay (today colours are hard-coded
+  dark).
+- In-launcher: hex/bin already exist; add a third subtitle line only when
+  those extras exist so rows do not grow for everyone.
+
+**Files:** `Units.cs` / extend `Calculator.cs`, `LargeTypeWindow.cs`,
+`MainWindow.ExecuteSelected` Shift+Enter fallback.
+
+---
+
+## Stretch (after 1–30)
 
 - Rounded 4px clip on result icons (WPF `Clip` on a `Border`; skipped in PR #1).
 - Bookmark favicons (local Chromium `Favicons` SQLite; no network).
-- Store/UWP icons via `Windows.ApplicationModel` instead of the generic app
-  glyph when `IconExtractor` misses.
+- Store/UWP icons via `Windows.ApplicationModel` when `IconExtractor` misses.
 - Drag a file result out of the list (`DoDragDrop`).
-- Search-in-progress spinner for Evernote / 1Password async rows.
-- Large Type follows the active theme (today it hard-codes dark colours).
-- `Glyphs.Zip` (`U+F012`) may render as a missing-glyph box on older Segoe
-  MDL2; prefer a documented fallback.
-- Full theme editor (fonts, paddings, every colour) — Alfred Powerpack
-  territory; not required to *feel* like Alfred.
+- `Glyphs.Zip` (`U+F012`) missing-glyph fallback.
+- Full theme editor (every colour/font/padding) — Alfred Powerpack territory.
+- Global snippet expansion (item 14 is launcher-only first).
+- `IPreviewHandler` Quick Look (item 6 is images/text first).
+- Microsoft Graph contacts (item 28 is local files first).
+- Workflow store UI (item 29 is JSON files first).
 
 ---
 
 ## Suggested implementation order
 
-If the next change is a single PR, do **2 + 3 + 10** first: Appearance
-toggles, metrics/selection, and selected-row chrome. That is visible in a
-screenshot without new windows.
+**Visual, one PR:** **2 + 3 + 10** (appearance toggles, metrics, selected-row
+chrome). Screenshot-friendly, no new windows.
 
-Then **1** (highlighting) and **9** (light/system theme).
+**Then the search row:** **1** highlighting, **9** light/system theme, **5**
+motion, **4** blur (needs a Win11 box), **8** empty-state opt-in, **22**
+accessory buttons, **23** in-window status.
 
-Then **5** (motion), **4** (blur — needs a Windows box), **8** (empty-state
-opt-in).
+**Surfaces (own PRs):** **6** Quick Look and **7** actions panel share
+`Deactivated` / owned-child issues — ship them before **12** (buffer) and
+**11** (navigation), which depend on actions.
 
-Leave **6** and **7** as their own PRs; they add surfaces and activation-edge
-cases (`Deactivated` vs owned child windows).
+**Windows-native value:** **15** system commands, **17** window switcher,
+**16** `>`, **21** Everything, **20** keyword completeness, **30** units.
+
+**Powerpack-shaped:** **13** clipboard (opt-in), **14** snippets, **19**
+history, **24** settings search, **25–26** screen/a11y, **27–29** media /
+contacts / workflows.
+
+Leave **18** dictionary until a data source is chosen so it does not become
+a disguised web search.
 
 ---
 
@@ -392,8 +857,16 @@ cases (`Deactivated` vs owned child windows).
 - Full-screen game: hotkey still suppressed.
 - Preview launcher from Settings does not lose the settings window
   (`_openingSettings` pattern).
-- Any new overlay (Quick Look, actions, Large Type) must not dismiss the
-  launcher via `Window_Deactivated`.
+- Any new overlay (Quick Look, actions, Large Type, clipboard viewer) must
+  not dismiss the launcher via `Window_Deactivated`.
+- Path query `~\` browses; Backspace climbs; buffer chips survive a new query
+  until Esc.
+- `clip` is empty until Clipboard is enabled; 1Password copies never appear.
+- `< notepad` switches; Ctrl+Enter launches a second instance.
+- `shutdown` requires a second Enter; `lock` does not.
+- `?hotkeys` opens Settings on the right page.
+- IME composition does not spam queries; Narrator reads the selected title.
+- High contrast: no acrylic, visible 2px border.
 
 ---
 
@@ -405,12 +878,16 @@ cases (`Deactivated` vs owned child windows).
 | `LauncherUi.cs` | Modifier state, subtitle converter, visibility converters |
 | `Theme.cs` / `App.xaml` | Palettes, type sizes, hat geometry |
 | `Config.cs` | `AppearanceConfig` |
-| `SettingsWindow.xaml` / `.xaml.cs` | General → Appearance |
 | `SearchEngine.cs` | Query routing, empty-state, result DTOs |
 | `FuzzyMatcher.cs` | Scores; needs span export for item 1 |
 | `Models.cs` | `ResultItem`, `ResultAction` |
 | `IconExtractor.cs` / `Glyphs.cs` | Icons |
-| `LargeTypeWindow.cs` | Calculator overlay; should track theme |
+| `LargeTypeWindow.cs` | Calculator-only overlay; hard-coded dark colours |
+| `FileIndexer.cs` | Internal file index; Everything/WSearch would sit beside it |
+| `App.xaml.cs` | Tray, balloons, single-instance, `Notifier` |
+| `SettingsWindow.xaml` / `.xaml.cs` | Nine sections, no search, emoji sidebar |
+| `KeyboardHook.cs` | Summon only; future snippet expansion / clipboard hotkey |
 | `tools/make-icon.ps1` + `Assets/winfred.ico` | Mark |
 
 Previous run (merged): [Alfred UI/logo design](https://cursor.com/agents/bc-65d65915-2726-4ded-8458-31367f9c06dd).
+This handoff: [Winfred alfred ui gap](https://cursor.com/agents/bc-03464ec9-ff6b-4eb3-b3f3-8dd3a278628c).
